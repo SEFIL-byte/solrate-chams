@@ -1,0 +1,87 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Variables
+local chamsEnabled = true
+local CHAMS_COLOR = Color3.fromRGB(173, 216, 230) -- Light Blue
+local OUTLINE_COLOR = Color3.new(1, 1, 1) -- White
+
+-- Function to add chams to a character
+local function addChamsToCharacter(character)
+    if not character:FindFirstChild("ChamsHighlight") then
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "ChamsHighlight"
+        highlight.FillColor = CHAMS_COLOR
+        highlight.FillTransparency = 0.5
+        highlight.OutlineColor = OUTLINE_COLOR
+        highlight.OutlineTransparency = 0
+        highlight.Enabled = chamsEnabled
+        highlight.Parent = character
+    end
+end
+
+-- Function to add chams to a player
+local function addChamsToPlayer(player)
+    if player.Character then
+        addChamsToCharacter(player.Character)
+    end
+
+    player.CharacterAdded:Connect(function(character)
+        addChamsToCharacter(character)
+    end)
+end
+
+-- Add chams to all current players
+for _, player in ipairs(Players:GetPlayers()) do
+    addChamsToPlayer(player)
+end
+
+-- Add chams to new players
+Players.PlayerAdded:Connect(function(player)
+    addChamsToPlayer(player)
+end)
+
+-- GUI Setup
+local gui = Instance.new("ScreenGui")
+local frame = Instance.new("Frame")
+local toggleButton = Instance.new("TextButton")
+
+gui.Name = "ChamsGui"
+gui.Parent = game.CoreGui -- Parent to CoreGui so it shows in-game
+
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 2
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0.8, 0, 0.4, 0)
+toggleButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+toggleButton.Text = "Chams: ON"
+toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.SourceSans
+toggleButton.TextSize = 20
+toggleButton.Parent = frame
+
+-- Toggle Function
+local function toggleChams()
+    chamsEnabled = not chamsEnabled
+    toggleButton.Text = "Chams: " .. (chamsEnabled and "ON" or "OFF")
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("ChamsHighlight") then
+            player.Character.ChamsHighlight.Enabled = chamsEnabled
+        end
+    end
+end
+
+-- Button Click Event
+toggleButton.MouseButton1Click:Connect(toggleChams)
+
+-- Initial State
+toggleChams() -- Start with Chams ON
